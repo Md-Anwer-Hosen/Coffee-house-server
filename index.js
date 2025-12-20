@@ -31,7 +31,7 @@ async function run() {
     const coffeesCollection = client.db("coffeeDb").collection("coffees");
     const userCollection = client.db("coffeeDb").collection("users");
 
-    //view
+    //view-->
 
     app.get("/coffees", async (req, res) => {
       const cursor = coffeesCollection.find();
@@ -43,7 +43,6 @@ async function run() {
 
     app.get("/coffees/:id", async (req, res) => {
       const id = req.params.id;
-
       const query = { _id: new ObjectId(id) };
       const result = await coffeesCollection.findOne(query);
       res.send(result);
@@ -79,11 +78,45 @@ async function run() {
 
     //users API-->
 
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    //get user-->>
+
+    app.get("/users", async (req, res) => {
+      const cursor = await userCollection.find().toArray();
+      res.send(cursor);
+    });
+
+    //delete user -->>
+
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //update last login-->>
+
+    app.patch("/users", async (req, res) => {
+      const { email, lastSignInTime } = req.body;
+
+      const filter = { email: email };
+      const updatedDoc = {
+        $set: { lastSignInTime: lastSignInTime },
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    console.log("My server successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
